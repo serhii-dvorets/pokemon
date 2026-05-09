@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Patch,
   Param,
   Post,
   Res,
@@ -12,6 +13,7 @@ import {
 import { PokemonListService } from './pokemon-list.service';
 import { Public } from '../../common/decorators/auth.decorator';
 import { CreatePokemonListDto } from './dto/create-pokemon-list.dto';
+import { UpdatePokemonListDto } from './dto/update-pokemon-list.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { readFileSync } from 'fs';
@@ -36,6 +38,12 @@ export class PokemonListController {
   @Public()
   remove(@Param('id') id: string) {
     return this.pokemonListService.remove(id);
+  }
+
+  @Patch(':id')
+  @Public()
+  update(@Param('id') id: string, @Body() payload: UpdatePokemonListDto) {
+    return this.pokemonListService.update(id, payload);
   }
 
   @Post()

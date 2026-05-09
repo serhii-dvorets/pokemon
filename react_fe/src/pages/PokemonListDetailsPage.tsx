@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { downloadExportedPokemonList, getPokemonListById } from '../api/pokemonLists'
+import { downloadExportedPokemonList, getPokemonListById, updatePokemonList } from '../api/pokemonLists'
 import { RuleStatus } from '../components/RuleStatus'
 import type { PokemonListDetails } from '../types/pokemon'
 
@@ -17,6 +17,8 @@ export function PokemonListDetailsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [downloading, setDownloading] = useState(false)
+  const [renaming, setRenaming] = useState(false)
+  const [newName, setNewName] = useState('')
 
   useEffect(() => {
     if (!id) {
@@ -35,11 +37,34 @@ export function PokemonListDetailsPage() {
     try {
       const response = await getPokemonListById(listId)
       setList(response)
+      setNewName(response.name)
     } catch (loadError) {
       const message = loadError instanceof Error ? loadError.message : 'Unable to load list details'
       setError(message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleRename() {
+    if (!id || !list) {
+      return
+    }
+
+    setRenaming(true)
+    setError(null)
+
+    try {
+      const updated = await updatePokemonList(id, {
+        name: newName,
+      })
+      setList(updated)
+      setNewName(updated.name)
+    } catch (renameError) {
+      const message = renameError instanceof Error ? renameError.message : 'Unable to rename list'
+      setError(message)
+    } finally {
+      setRenaming(false)
     }
   }
 
@@ -100,6 +125,22 @@ export function PokemonListDetailsPage() {
 
       {!loading && list ? (
         <>
+          <div className="panel">
+            <h3>List Name</h3>
+            <div className="row-actions">
+              <input
+                className="text-input"
+                value={newName}
+                onChange={(event) => setNewName(event.target.value)}
+                maxLength={100}
+                aria-label="List name"
+              />
+              <button className="btn btn-primary" onClick={handleRename} disabled={renaming}>
+                {renaming ? 'Saving...' : 'Save Name'}
+              </button>
+            </div>
+          </div>
+
           <RuleStatus uniqueSpeciesCount={list.uniqueSpeciesCount} totalWeight={list.totalWeight} />
 
           <div className="panel">

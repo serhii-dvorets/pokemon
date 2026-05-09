@@ -11,6 +11,7 @@ import {
   PokemonListItem,
 } from './schemas/pokemon-list.schema';
 import { CreatePokemonListDto } from './dto/create-pokemon-list.dto';
+import { UpdatePokemonListDto } from './dto/update-pokemon-list.dto';
 
 const MIN_UNIQUE_SPECIES = 3;
 const MAX_TOTAL_WEIGHT = 1300;
@@ -68,6 +69,18 @@ export class PokemonListService {
       id,
       deleted: true,
     };
+  }
+
+  async update(id: string, payload: UpdatePokemonListDto) {
+    const list = await this.getListByIdOrFail(id);
+
+    if (typeof payload.name === 'string') {
+      list.name = payload.name.trim() || 'Untitled list';
+    }
+
+    const updated = await list.save();
+
+    return this.toDetailedResponse(updated.toObject());
   }
 
   async exportById(id: string) {
