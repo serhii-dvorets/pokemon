@@ -1,0 +1,54 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: pokemon_mongo
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 72
+    volumes:
+      - pokemon_mongo_data:/data/db
+    ports:
+      - "27017:27017"
+
+  backend:
+    build:
+      context: ./nest_be
+      dockerfile: ./docker/backend/Dockerfile
+    container_name: pokemon_backend
+    depends_on:
+      mongo:
+        condition: service_healthy
+    env_file:
+      - ./nest_be/docker/env/.env.backend
+    environment:
+      MONGO_URI: mongodb://mongo:27017
+      MONGO_DB_NAME: pokemon
+      PORT: 8000
+    command: sh -c "npm run start:dev"
+    volumes:
+      - ./nest_be:/app
+      - /app/node_modules
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./react_fe
+      dockerfile: ./Dockerfile
+    container_name: pokemon_frontend
+    depends_on:
+      - backend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000
+    command: sh -c "npm run dev -- --host 0.0.0.0 --port 5173"
+    volumes:
+      - ./react_fe:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+
+volumes:
+  pokemon_mongo_data:

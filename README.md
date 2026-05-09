@@ -37,49 +37,58 @@ Small full-stack application for building and managing custom Pokemon lists with
 ## Prerequisites
 
 - Docker + Docker Compose
-- Node.js 20+
-- npm
 
 ## Run Locally
 
-### 1. Start backend + database (Docker)
+### 1. Start all services with one command
+
+```bash
+docker compose up --build
+```
+
+This starts:
+
+- Frontend at `http://localhost:5173`
+- Backend at `http://localhost:8000`
+- MongoDB at `mongodb://localhost:27017`
+
+### 2. Stop all services
+
+```bash
+docker compose down
+```
+
+To remove containers and Mongo volume data:
+
+```bash
+docker compose down -v
+```
+
+### Notes
+
+- Compose reads backend env vars from `nest_be/docker/env/.env.backend`.
+- `MONGO_URI`, `MONGO_DB_NAME`, and `PORT` are also set in `docker-compose.yml` for predictable local startup.
+- Frontend API base URL is injected in the frontend container as `VITE_API_BASE_URL=http://localhost:8000`.
+
+## Optional: Run Without Docker
+
+### Backend (NestJS)
 
 ```bash
 cd nest_be
-cp .env.registry .env
-cp .env.defaults docker/env/.env.backend
+npm install
+npm run start:dev
 ```
 
-Make sure `docker/env/.env.backend` contains Mongo settings:
-
-```env
-MONGO_URI=mongodb://mongo:27017
-MONGO_DB_NAME=pokemon
-PORT=8000
-```
-
-Start services:
+### Frontend (React)
 
 ```bash
-cd docker
-docker compose up -d --build
-```
-
-Backend will be available at `http://localhost:8000`.
-
-### 2. Start frontend
-
-```bash
-cd ../../react_fe
+cd react_fe
 npm install
 npm run dev
 ```
 
-Frontend runs at `http://localhost:5173`.
-
-Optional API base override (if needed):
-
-Create `react_fe/.env`:
+Optional frontend API base override in `react_fe/.env`:
 
 ```env
 VITE_API_BASE_URL=http://localhost:8000
