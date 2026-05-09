@@ -1,0 +1,29 @@
+services:
+  backend:
+    build:
+      context: ../
+      dockerfile: ./docker/backend/Dockerfile
+    image: ${BE_REGISTRY_ADDRESS}:${BE_TAG}
+    container_name: nest_be
+    depends_on:
+      mongo:
+        condition: service_healthy
+    ports: [ '8000:8000' ]
+    env_file: ./env/.env.backend
+    command: sh -c "npm run start:dev"
+    volumes:
+      - ../:/app
+      - /app/node_modules
+
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      timeout: 5s
+      retries: 72
+    volumes:
+      - ~/docker-volumes/base_nest/mongo:/data/db
+    ports: [ '27017:27017' ]
