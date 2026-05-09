@@ -60,6 +60,16 @@ export class PokemonListService {
     return this.toDetailedResponse(list.toObject());
   }
 
+  async remove(id: string) {
+    const list = await this.getListByIdOrFail(id);
+    await list.deleteOne();
+
+    return {
+      id,
+      deleted: true,
+    };
+  }
+
   async exportById(id: string) {
     const list = await this.getListByIdOrFail(id);
 

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -29,6 +30,12 @@ export class PokemonListController {
   @Public()
   findOne(@Param('id') id: string) {
     return this.pokemonListService.findOne(id);
+  }
+
+  @Delete(':id')
+  @Public()
+  remove(@Param('id') id: string) {
+    return this.pokemonListService.remove(id);
   }
 
   @Post()

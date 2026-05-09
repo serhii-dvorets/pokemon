@@ -1,7 +1,7 @@
 import { type ChangeEvent, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ApiError } from '../api/client'
-import { getPokemonLists, importPokemonList } from '../api/pokemonLists'
+import { deletePokemonList, getPokemonLists, importPokemonList } from '../api/pokemonLists'
 import type { PokemonListSummary } from '../types/pokemon'
 
 function formatDate(dateIso: string): string {
@@ -16,6 +16,7 @@ export function PokemonListsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [importing, setImporting] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function loadLists() {
@@ -30,6 +31,27 @@ export function PokemonListsPage() {
       setError(message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleDelete(list: PokemonListSummary) {
+    const accepted = window.confirm(`Delete "${list.name}"? This action cannot be undone.`)
+
+    if (!accepted) {
+      return
+    }
+
+    setDeletingId(list.id)
+    setError(null)
+
+    try {
+      await deletePokemonList(list.id)
+      setLists((prev) => prev.filter((item) => item.id !== list.id))
+    } catch (deleteError) {
+      const message = deleteError instanceof Error ? deleteError.message : 'Failed to delete list'
+      setError(message)
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -120,9 +142,18 @@ export function PokemonListsPage() {
                 </div>
               </dl>
               <p className="subtle">Updated {formatDate(list.updatedAt)}</p>
-              <Link className="btn btn-secondary" to={`/pokemon-lists/${list.id}`}>
-                Open List
-              </Link>
+              <div className="row-actions">
+                <Link className="btn btn-secondary" to={`/pokemon-lists/${list.id}`}>
+                  Open List
+                </Link>
+                <button
+                  className="btn btn-danger"
+                  onClick={() => handleDelete(list)}
+                  disabled={deletingId === list.id}
+                >
+                  {deletingId === list.id ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
             </article>
           ))}
         </div>

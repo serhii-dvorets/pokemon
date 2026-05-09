@@ -182,6 +182,12 @@ body {
   color: var(--ink);
 }
 
+.btn-danger {
+  background: #fff4f1;
+  border-color: #f0ab9f;
+  color: #742114;
+}
+
 .full {
   width: 100%;
 }
