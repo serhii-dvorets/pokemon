@@ -3,7 +3,7 @@ services:
     build:
       context: ../
       dockerfile: ./docker/backend/Dockerfile
-    image: ${BE_REGISTRY_ADDRESS}:${BE_TAG}
+    image: ${BE_REGISTRY_ADDRESS:-nest_be}:${BE_TAG:-local}
     container_name: nest_be
     depends_on:
       mongo:

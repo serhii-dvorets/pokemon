@@ -6,6 +6,7 @@ import { AppConfig } from './config';
 import { validateConfig } from './common/validation/env.validation';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PokemonModule } from './modules/pokemon/pokemon.module';
+import { PokemonListModule } from './modules/pokemon-list/pokemon-list.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { PokemonModule } from './modules/pokemon/pokemon.module';
       }),
     }),
     PokemonModule,
+    PokemonListModule,
   ],
   controllers: [AppController],
   providers: [AppService],

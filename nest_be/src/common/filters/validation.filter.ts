@@ -65,6 +65,21 @@ export class ValidationExceptionFilter implements ExceptionFilter {
           ? exception.getStatus()
           : HttpStatus.INTERNAL_SERVER_ERROR;
 
+      if (exception instanceof HttpException) {
+        const errorResponse = exception.getResponse();
+
+        if (typeof errorResponse === 'object' && errorResponse !== null) {
+          return response.status(status).json(errorResponse);
+        }
+
+        if (typeof errorResponse === 'string') {
+          return response.status(status).json({
+            statusCode: status,
+            message: errorResponse,
+          });
+        }
+      }
+
       response.status(status).json({
         statusCode: status,
         message: exception.message || 'Server error',
