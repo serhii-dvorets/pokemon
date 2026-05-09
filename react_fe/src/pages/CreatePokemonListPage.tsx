@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { getPokemonCatalog } from '../api/pokemon'
-import { createPokemonList } from '../api/pokemonLists'
+import { createPokemonList, importPokemonList } from '../api/pokemonLists'
 import { RuleStatus } from '../components/RuleStatus'
 import type { PokemonCatalogItem } from '../types/pokemon'
 
@@ -24,7 +24,9 @@ export function CreatePokemonListPage() {
   const [hasNextPage, setHasNextPage] = useState(false)
   const [selection, setSelection] = useState<SelectionMap>({})
   const [submitting, setSubmitting] = useState(false)
+  const [importing, setImporting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const selectedItems = useMemo(() => Object.values(selection), [selection])
   const uniqueSpeciesCount = useMemo(
@@ -126,12 +128,53 @@ export function CreatePokemonListPage() {
     }
   }
 
+  async function handleImport(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+
+    if (!file) {
+      return
+    }
+
+    setImporting(true)
+    setSubmitError(null)
+
+    try {
+      const imported = await importPokemonList(file)
+      navigate(`/pokemon-lists/${imported.id}`)
+    } catch (error) {
+      if (error instanceof ApiError && error.messages.length > 0) {
+        setSubmitError(error.messages.join('. '))
+      } else {
+        const message = error instanceof Error ? error.message : 'Unable to import list'
+        setSubmitError(message)
+      }
+    } finally {
+      setImporting(false)
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
   return (
     <section className="page-stack">
       <div className="panel panel-heading-row">
         <div>
           <h2>Create Pokemon List</h2>
           <p className="subtle">Select Pokemon from the catalog and submit a rules-compliant team.</p>
+        </div>
+        <div className="row-actions">
+          <button className="btn btn-ghost" onClick={() => fileInputRef.current?.click()} disabled={importing}>
+            {importing ? 'Importing...' : 'Import Saved File'}
+          </button>
+          <input
+            ref={fileInputRef}
+            className="visually-hidden"
+            type="file"
+            accept="application/json"
+            onChange={handleImport}
+          />
         </div>
       </div>
 
