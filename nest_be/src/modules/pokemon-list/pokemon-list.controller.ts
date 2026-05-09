@@ -40,6 +40,12 @@ export class PokemonListController {
     return this.pokemonListService.remove(id);
   }
 
+  @Delete(':id/items/:pokemonId')
+  @Public()
+  removeItem(@Param('id') id: string, @Param('pokemonId') pokemonId: string) {
+    return this.pokemonListService.removeItem(id, pokemonId);
+  }
+
   @Patch(':id')
   @Public()
   update(@Param('id') id: string, @Body() payload: UpdatePokemonListDto) {

@@ -71,6 +71,43 @@ export class PokemonListService {
     };
   }
 
+  async removeItem(id: string, pokemonIdRaw: string) {
+    const pokemonId = Number.parseInt(pokemonIdRaw, 10);
+
+    if (Number.isNaN(pokemonId) || pokemonId < 1) {
+      throw new BadRequestException('Pokemon id is invalid');
+    }
+
+    const list = await this.getListByIdOrFail(id);
+    const targetIndex = list.items.findIndex(
+      (item) => item.pokemonId === pokemonId,
+    );
+
+    if (targetIndex < 0) {
+      throw new NotFoundException('Pokemon item not found in this list');
+    }
+
+    const nextItems = list.items.filter((_, index) => index !== targetIndex);
+    const { totalWeight, uniqueSpeciesCount, violations } =
+      this.getRuleValidationResult(nextItems);
+
+    if (violations.length > 0) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'LIST_RULES_VIOLATION',
+        messages: violations,
+      });
+    }
+
+    list.items = nextItems;
+    list.totalWeight = totalWeight;
+    list.uniqueSpeciesCount = uniqueSpeciesCount;
+
+    const updated = await list.save();
+
+    return this.toDetailedResponse(updated.toObject());
+  }
+
   async update(id: string, payload: UpdatePokemonListDto) {
     const list = await this.getListByIdOrFail(id);
 
@@ -140,27 +177,8 @@ export class PokemonListService {
       spriteUrl: item.spriteUrl || null,
     }));
 
-    const uniqueSpeciesCount = new Set(
-      normalizedItems.map((item) => item.speciesName),
-    ).size;
-    const totalWeight = normalizedItems.reduce(
-      (sum, item) => sum + item.weight,
-      0,
-    );
-
-    const violations: string[] = [];
-
-    if (uniqueSpeciesCount < MIN_UNIQUE_SPECIES) {
-      violations.push(
-        `At least ${MIN_UNIQUE_SPECIES} Pokemon of different species are required`,
-      );
-    }
-
-    if (totalWeight > MAX_TOTAL_WEIGHT) {
-      violations.push(
-        `Total weight must not exceed ${MAX_TOTAL_WEIGHT} hectograms`,
-      );
-    }
+    const { totalWeight, uniqueSpeciesCount, violations } =
+      this.getRuleValidationResult(normalizedItems);
 
     if (violations.length > 0) {
       throw new BadRequestException({
@@ -175,6 +193,31 @@ export class PokemonListService {
       items: normalizedItems,
       totalWeight,
       uniqueSpeciesCount,
+    };
+  }
+
+  private getRuleValidationResult(items: PokemonListItem[]) {
+    const uniqueSpeciesCount = new Set(items.map((item) => item.speciesName))
+      .size;
+    const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
+    const violations: string[] = [];
+
+    if (uniqueSpeciesCount < MIN_UNIQUE_SPECIES) {
+      violations.push(
+        `At least ${MIN_UNIQUE_SPECIES} Pokemon of different species are required`,
+      );
+    }
+
+    if (totalWeight > MAX_TOTAL_WEIGHT) {
+      violations.push(
+        `Total weight must not exceed ${MAX_TOTAL_WEIGHT} hectograms`,
+      );
+    }
+
+    return {
+      totalWeight,
+      uniqueSpeciesCount,
+      violations,
     };
   }
 

@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { downloadExportedPokemonList, getPokemonListById, updatePokemonList } from '../api/pokemonLists'
+import { ApiError } from '../api/client'
+import {
+  downloadExportedPokemonList,
+  getPokemonListById,
+  removePokemonFromList,
+  updatePokemonList,
+} from '../api/pokemonLists'
 import { RuleStatus } from '../components/RuleStatus'
 import type { PokemonListDetails } from '../types/pokemon'
 
@@ -18,6 +24,7 @@ export function PokemonListDetailsPage() {
   const [error, setError] = useState<string | null>(null)
   const [downloading, setDownloading] = useState(false)
   const [renaming, setRenaming] = useState(false)
+  const [removingPokemonId, setRemovingPokemonId] = useState<number | null>(null)
   const [newName, setNewName] = useState('')
 
   useEffect(() => {
@@ -94,6 +101,35 @@ export function PokemonListDetailsPage() {
     }
   }
 
+  async function handleRemoveItem(pokemonId: number, pokemonName: string) {
+    if (!id || !list) {
+      return
+    }
+
+    const accepted = window.confirm(`Remove ${pokemonName} from this list?`)
+
+    if (!accepted) {
+      return
+    }
+
+    setRemovingPokemonId(pokemonId)
+    setError(null)
+
+    try {
+      const updated = await removePokemonFromList(id, pokemonId)
+      setList(updated)
+    } catch (removeError) {
+      if (removeError instanceof ApiError && removeError.messages.length > 0) {
+        setError(removeError.messages.join('. '))
+      } else {
+        const message = removeError instanceof Error ? removeError.message : 'Unable to remove pokemon'
+        setError(message)
+      }
+    } finally {
+      setRemovingPokemonId(null)
+    }
+  }
+
   const sortedItems = useMemo(() => {
     if (!list) {
       return []
@@ -155,7 +191,16 @@ export function PokemonListDetailsPage() {
                       <p className="subtle">species: {item.speciesName}</p>
                     </div>
                   </div>
-                  <span className="badge">weight {item.weight}</span>
+                  <div className="row-actions">
+                    <span className="badge">weight {item.weight}</span>
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => handleRemoveItem(item.pokemonId, item.name)}
+                      disabled={removingPokemonId === item.pokemonId}
+                    >
+                      {removingPokemonId === item.pokemonId ? 'Removing...' : 'Remove'}
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>

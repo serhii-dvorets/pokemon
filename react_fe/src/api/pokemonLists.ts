@@ -30,6 +30,12 @@ export function deletePokemonList(id: string): Promise<{ id: string; deleted: bo
   })
 }
 
+export function removePokemonFromList(id: string, pokemonId: number): Promise<PokemonListDetails> {
+  return apiRequest<PokemonListDetails>(`/pokemon-lists/${id}/items/${pokemonId}`, {
+    method: 'DELETE',
+  })
+}
+
 export function createPokemonList(payload: CreatePokemonListPayload): Promise<PokemonListDetails> {
   return apiRequest<PokemonListDetails>('/pokemon-lists', {
     method: 'POST',
