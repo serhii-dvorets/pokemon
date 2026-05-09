@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppConfig } from './config';
 import { validateConfig } from './common/validation/env.validation';
 import { MongooseModule } from '@nestjs/mongoose';
+import { PokemonModule } from './modules/pokemon/pokemon.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { MongooseModule } from '@nestjs/mongoose';
         dbName: configService.get<string>('MONGO_DB_NAME') || 'pokemon',
       }),
     }),
+    PokemonModule,
   ],
   controllers: [AppController],
   providers: [AppService],
