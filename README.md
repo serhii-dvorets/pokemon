@@ -40,6 +40,9 @@ Small full-stack application for building and managing custom Pokemon lists with
 
 ## Run Locally
 
+Prepare env files (update the database keys if needed)
+run: `cp nest_be/.env.defaults nest_be/docker/.env.backend`
+
 ### 1. Start all services with one command
 
 ```bash

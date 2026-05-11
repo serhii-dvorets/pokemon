@@ -22,7 +22,7 @@ services:
       mongo:
         condition: service_healthy
     env_file:
-      - ./nest_be/docker/env/.env.backend
+      - ./nest_be/docker/.env.backend
     environment:
       MONGO_URI: mongodb://mongo:27017
       MONGO_DB_NAME: pokemon
