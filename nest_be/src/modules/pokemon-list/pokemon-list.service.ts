@@ -88,16 +88,8 @@ export class PokemonListService {
     }
 
     const nextItems = list.items.filter((_, index) => index !== targetIndex);
-    const { totalWeight, uniqueSpeciesCount, violations } =
+    const { totalWeight, uniqueSpeciesCount } =
       this.getRuleValidationResult(nextItems);
-
-    if (violations.length > 0) {
-      throw new BadRequestException({
-        statusCode: 400,
-        code: 'LIST_RULES_VIOLATION',
-        messages: violations,
-      });
-    }
 
     list.items = nextItems;
     list.totalWeight = totalWeight;

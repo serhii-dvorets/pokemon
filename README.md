@@ -45,12 +45,16 @@ Small full-stack application for building and managing custom Pokemon lists with
 ```bash
 docker compose up --build
 ```
+Frontend service is waiting for the backend services to be health,
+this might take up to 30 seconds.
 
-This starts:
+After this timeout, these services should start:
 
 - Frontend at `http://localhost:5173`
 - Backend at `http://localhost:8000`
 - MongoDB at `mongodb://localhost:27017`
+
+Open `http://localhost:5173` to see the UI
 
 ### 2. Stop all services
 

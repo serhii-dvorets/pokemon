@@ -93,6 +93,7 @@ export function CreatePokemonListPage() {
         [item.id]: item,
       }
     })
+    setSubmitError(null)
   }
 
   function clearSelection() {
@@ -277,9 +278,9 @@ export function CreatePokemonListPage() {
               </ul>
             )}
 
-            {submitError ? <div className="alert alert-error">{submitError}</div> : null}
+            {submitError ? <div className="alert alert-error alert-inline-gap">{submitError}</div> : null}
 
-            <button className="btn btn-primary full" onClick={handleCreateList} disabled={submitting}>
+            <button className="btn btn-primary full btn-create-list" onClick={handleCreateList} disabled={submitting}>
               {submitting ? 'Creating...' : 'Create List'}
             </button>
           </div>

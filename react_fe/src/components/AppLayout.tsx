@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 
 type AppLayoutProps = {
   children: ReactNode
@@ -11,7 +11,11 @@ export function AppLayout({ children }: AppLayoutProps) {
       <header className="topbar">
         <div>
           <p className="eyebrow">Pokemon Team Builder</p>
-          <h1 className="brand-title">Pokedex Lab</h1>
+          <h1 className="brand-title">
+            <Link className="brand-link" to="/">
+              Pokedex Lab
+            </Link>
+          </h1>
         </div>
 
         <nav className="topbar-nav" aria-label="Main navigation">

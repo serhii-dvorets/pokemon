@@ -28,6 +28,20 @@ services:
       MONGO_DB_NAME: pokemon
       PORT: 8000
     command: sh -c "npm run start:dev"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-q",
+          "-O",
+          "/dev/null",
+          "http://localhost:8000/",
+        ]
+      interval: 1s
+      timeout: 1s
+      retries: 40
+      start_period: 1s
     volumes:
       - ./nest_be:/app
       - /app/node_modules
@@ -40,10 +54,25 @@ services:
       dockerfile: ./Dockerfile
     container_name: pokemon_frontend
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     environment:
       VITE_API_BASE_URL: http://localhost:8000
     command: sh -c "npm run dev -- --host 0.0.0.0 --port 5173"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-q",
+          "-O",
+          "/dev/null",
+          "http://localhost:5173/",
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+      start_period: 20s
     volumes:
       - ./react_fe:/app
       - /app/node_modules
